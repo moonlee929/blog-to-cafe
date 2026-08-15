@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.70.0",
+    "@anthropic-ai/sdk": "^0.117.1",
     "@supabase/supabase-js": "^2.58.0",
     "fast-xml-parser": "^5.2.0",
     "iconv-lite": "^0.7.0",

@@ -25,6 +25,7 @@ const SYSTEM = `너는 네이버 카페 게시판에 올릴 짧은 홍보 문구
 - 본문에 없는 내용을 지어내지 않는다. 정보가 부족하면 제목이 말하는 범위 안에서만 쓴다.
 - 존댓말, 담백한 어조.`;
 
+// 구조화 출력 스키마. additionalProperties: false 와 required 는 필수입니다.
 const SCHEMA = {
   type: 'object',
   properties: {
@@ -33,7 +34,7 @@ const SCHEMA = {
   },
   required: ['cafe_title', 'intro'],
   additionalProperties: false,
-} as const;
+};
 
 /**
  * 블로그 글 제목/발췌로 카페용 제목과 소개 문구를 만듭니다.
@@ -55,14 +56,18 @@ export async function generateCafeCopy(input: {
   try {
     const res = await client().messages.create({
       model: 'claude-opus-5',
+      // Opus 5는 thinking이 기본 on이라 max_tokens가 thinking + 응답을 함께 덮습니다.
+      // 짧은 카피 한 건이라 4000이면 충분하지만 여유를 두었습니다.
       max_tokens: 4000,
       system: SYSTEM,
       output_config: {
+        // 짧은 카피 생성이라 낮은 effort로 지연과 비용을 줄입니다.
         effort: 'low',
+        // 구조화 출력으로 파싱 실패 가능성을 없앱니다.
         format: { type: 'json_schema', schema: SCHEMA },
       },
       messages: [{ role: 'user', content: userPrompt }],
-    } as Anthropic.MessageCreateParamsNonStreaming);
+    });
 
     if (res.stop_reason === 'refusal') {
       throw new Error('Claude가 요청을 거절했습니다.');
