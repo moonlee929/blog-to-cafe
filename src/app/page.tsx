@@ -34,7 +34,6 @@ const STATUS_LABEL: Record<PostRow['status'], string> = {
 export default function Home() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [blogId, setBlogId] = useState('');
-  const [menuId, setMenuId] = useState('');
   const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -47,7 +46,6 @@ export default function Home() {
     const data = (await res.json()) as MeResponse;
     setMe(data);
     setBlogId(data.member?.blogId ?? '');
-    setMenuId(data.member?.targetMenuId ?? '');
   }, []);
 
   useEffect(() => {
@@ -66,7 +64,7 @@ export default function Home() {
       const res = await fetch('/api/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blogId, targetMenuId: menuId }),
+        body: JSON.stringify({ blogId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? '저장에 실패했습니다.');
@@ -156,20 +154,6 @@ export default function Home() {
             autoComplete="off"
           />
           <p className="hint">blog.naver.com/ 뒤에 오는 아이디입니다. 블로그 주소를 통째로 붙여넣어도 됩니다.</p>
-        </div>
-
-        <div className="field">
-          <label htmlFor="menuId">카페 게시판 번호 (menuid)</label>
-          <input
-            id="menuId"
-            type="text"
-            value={menuId}
-            onChange={(e) => setMenuId(e.target.value)}
-            placeholder="15"
-            inputMode="numeric"
-            autoComplete="off"
-          />
-          <p className="hint">운영자가 안내한 게시판 번호를 입력하세요.</p>
         </div>
 
         <div className="row">

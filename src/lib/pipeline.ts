@@ -128,12 +128,11 @@ export async function publishPost(member: Member, post: BlogPost): Promise<Publi
 
   // ── 실제 발행 ────────────────────────────────────────────────
   try {
-    if (!member.target_menu_id) throw new Error('발행할 카페 게시판(menuid)이 설정되지 않았습니다.');
-
     const accessToken = await getValidAccessToken(member);
     const result = await writeCafeArticle({
       accessToken,
-      menuId: member.target_menu_id,
+      // 기본은 운영자가 정한 게시판. 특정 회원만 다른 곳에 보내야 할 때만 회원 값으로 덮어씁니다.
+      menuId: member.target_menu_id ?? env.cafeMenuId,
       subject: copy.cafeTitle,
       content,
     });
@@ -181,14 +180,14 @@ export async function runPollCycle(options?: { memberId?: string }): Promise<{
   for (const raw of (members ?? []) as Member[]) {
     const member = { ...raw };
 
-    if (!member.blog_rss_url || !member.target_menu_id) {
+    if (!member.blog_rss_url) {
       results.push({
         memberId: member.id,
         nickname: member.nickname,
         checked: false,
         newPosts: 0,
         outcomes: [],
-        error: '블로그 또는 게시판 설정이 비어 있습니다.',
+        error: '블로그가 등록되지 않았습니다.',
       });
       continue;
     }

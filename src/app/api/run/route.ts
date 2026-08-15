@@ -18,8 +18,8 @@ export async function POST() {
   const { data } = await db().from('members').select('*').eq('id', memberId).maybeSingle();
   const member = data as Member | null;
   if (!member) return NextResponse.json({ error: '회원 정보를 찾을 수 없습니다.' }, { status: 404 });
-  if (!member.blog_rss_url || !member.target_menu_id) {
-    return NextResponse.json({ error: '블로그 아이디와 게시판 menuid를 먼저 저장해 주세요.' }, { status: 400 });
+  if (!member.blog_rss_url) {
+    return NextResponse.json({ error: '블로그 아이디를 먼저 저장해 주세요.' }, { status: 400 });
   }
 
   try {
