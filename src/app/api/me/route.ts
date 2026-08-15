@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db, type Member } from '@/lib/supabase';
 import { getSessionMemberId } from '@/lib/session';
 import { normalizeBlogId, rssUrlFor, validateRss } from '@/lib/rss';
+import { isBoardKey } from '@/lib/boards';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ export async function GET() {
       nickname: member.nickname,
       blogId: member.blog_id,
       blogRssUrl: member.blog_rss_url,
+      boardTarget: member.board_target ?? 'challenge',
       targetMenuId: member.target_menu_id,
       isActive: member.is_active,
       dailyPostCount: member.daily_post_count,
@@ -48,9 +50,21 @@ export async function POST(req: Request) {
   const member = await currentMember();
   if (!member) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
 
-  const body = (await req.json()) as { blogId?: string; targetMenuId?: string; isActive?: boolean };
+  const body = (await req.json()) as {
+    blogId?: string;
+    boardTarget?: string;
+    targetMenuId?: string;
+    isActive?: boolean;
+  };
 
   const patch: Record<string, unknown> = {};
+
+  if (body.boardTarget !== undefined) {
+    if (!isBoardKey(body.boardTarget)) {
+      return NextResponse.json({ error: '발행할 게시판 선택이 올바르지 않습니다.' }, { status: 400 });
+    }
+    patch.board_target = body.boardTarget;
+  }
 
   if (body.blogId !== undefined) {
     const blogId = normalizeBlogId(body.blogId);

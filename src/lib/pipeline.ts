@@ -4,6 +4,16 @@ import { fetchBlogPosts, normalizePostUrl, type BlogPost } from './rss';
 import { generateCafeCopy, buildCafeContent } from './claude';
 import { getValidAccessToken, writeCafeArticle } from './naver';
 
+/**
+ * 회원이 고른 종류를 지금 시점의 실제 카페 게시판 menuid로 바꿉니다.
+ * env 를 읽으므로 서버 전용입니다. 클라이언트에서 쓰는 상수는 lib/boards.ts 에 있습니다.
+ */
+function resolveMenuId(member: Pick<Member, 'board_target' | 'target_menu_id'>): string {
+  // 두 종류로 커버되지 않는 예외 회원용 통로
+  if (member.target_menu_id) return member.target_menu_id;
+  return member.board_target === 'sharing' ? env.cafeMenuIdSharing : env.cafeMenuIdChallenge;
+}
+
 /** 백로그가 카페에 한꺼번에 쏟아지지 않도록, 이 기간보다 오래된 글은 무시합니다. */
 const MAX_POST_AGE_DAYS = 7;
 /** 계속 실패하는 글의 재시도 상한 */
@@ -131,8 +141,8 @@ export async function publishPost(member: Member, post: BlogPost): Promise<Publi
     const accessToken = await getValidAccessToken(member);
     const result = await writeCafeArticle({
       accessToken,
-      // 기본은 운영자가 정한 게시판. 특정 회원만 다른 곳에 보내야 할 때만 회원 값으로 덮어씁니다.
-      menuId: member.target_menu_id ?? env.cafeMenuId,
+      // 회원이 고른 종류(챌린지/공유)를 지금 시점의 실제 게시판 번호로 바꿉니다.
+      menuId: resolveMenuId(member),
       subject: copy.cafeTitle,
       content,
     });

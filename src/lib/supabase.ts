@@ -26,6 +26,9 @@ export type Member = {
   token_expires_at: string | null;
   blog_id: string | null;
   blog_rss_url: string | null;
+  /** 'challenge' | 'sharing' — 회원이 고른 발행 대상 종류 */
+  board_target: string | null;
+  /** 위 두 종류로 커버되지 않는 예외 회원용. 값이 있으면 board_target 보다 우선합니다. */
   target_menu_id: string | null;
   is_active: boolean;
   is_admin: boolean;

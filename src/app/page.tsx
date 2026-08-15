@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { BOARD_KEYS, BOARDS, type BoardKey } from '@/lib/boards';
 
 type PostRow = {
   blog_title: string | null;
@@ -17,7 +18,7 @@ type MeResponse = {
   member?: {
     nickname: string | null;
     blogId: string | null;
-    targetMenuId: string | null;
+    boardTarget: BoardKey;
     dailyPostCount: number;
     lastCheckedAt: string | null;
     lastError: string | null;
@@ -34,6 +35,7 @@ const STATUS_LABEL: Record<PostRow['status'], string> = {
 export default function Home() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [blogId, setBlogId] = useState('');
+  const [boardTarget, setBoardTarget] = useState<BoardKey>('challenge');
   const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,6 +48,7 @@ export default function Home() {
     const data = (await res.json()) as MeResponse;
     setMe(data);
     setBlogId(data.member?.blogId ?? '');
+    setBoardTarget(data.member?.boardTarget ?? 'challenge');
   }, []);
 
   useEffect(() => {
@@ -64,7 +67,7 @@ export default function Home() {
       const res = await fetch('/api/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blogId }),
+        body: JSON.stringify({ blogId, boardTarget }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? '저장에 실패했습니다.');
@@ -154,6 +157,27 @@ export default function Home() {
             autoComplete="off"
           />
           <p className="hint">blog.naver.com/ 뒤에 오는 아이디입니다. 블로그 주소를 통째로 붙여넣어도 됩니다.</p>
+        </div>
+
+        <div className="field">
+          <label>어느 게시판에 올릴까요?</label>
+          <div className="choices">
+            {BOARD_KEYS.map((key) => (
+              <label key={key} className={`choice ${boardTarget === key ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="boardTarget"
+                  value={key}
+                  checked={boardTarget === key}
+                  onChange={() => setBoardTarget(key)}
+                />
+                <span>
+                  <strong>{BOARDS[key].label}</strong>
+                  <em>{BOARDS[key].hint}</em>
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
 
         <div className="row">

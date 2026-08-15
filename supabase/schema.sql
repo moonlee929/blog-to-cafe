@@ -22,7 +22,15 @@ create table if not exists public.members (
   -- 블로그 / 발행 설정
   blog_id                text,          -- 네이버 블로그 아이디 (예: moonsaboo)
   blog_rss_url           text,          -- rss.blog.naver.com/{blog_id}.xml
-  target_menu_id         text,          -- 발행할 카페 게시판 menuid
+
+  -- 회원이 고르는 발행 대상. 게시판 "번호"가 아니라 "종류"를 저장합니다.
+  -- 챌린지 참여방은 매달 번호가 바뀌므로, 번호를 저장하면 다음 달에 지난 달 게시판으로 발행됩니다.
+  -- 실제 menuid 는 발행 직전에 CAFE_MENU_ID_CHALLENGE / CAFE_MENU_ID_SHARING 에서 읽습니다.
+  board_target           text        not null default 'challenge'
+                                      check (board_target in ('challenge', 'sharing')),
+
+  -- 위 두 종류로 커버되지 않는 예외 회원용. 값이 있으면 board_target 보다 우선합니다.
+  target_menu_id         text,
 
   -- 운영 플래그
   is_active              boolean     not null default true,

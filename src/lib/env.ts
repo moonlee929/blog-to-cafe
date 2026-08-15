@@ -24,12 +24,16 @@ export const env = {
     return required('CAFE_CLUB_ID');
   },
   /**
-   * 발행할 카페 게시판 menuid. 운영자가 한 곳에서 관리합니다.
-   * 이 카페는 매달 새 챌린지 게시판을 만들므로, 달이 바뀌면 이 값만 바꾸면 됩니다.
-   * 회원별로 저장하면 매달 30명 전원을 갱신해야 하므로 그렇게 하지 않습니다.
+   * 챌린지 참여자용 게시판 menuid.
+   * 이 카페는 매달 새 챌린지 게시판을 만들므로 달이 바뀌면 이 값만 갱신하면
+   * 챌린지 회원 전원에게 반영됩니다. (1월=2 … 7월=16, 8월=19)
    */
-  get cafeMenuId() {
-    return required('CAFE_MENU_ID');
+  get cafeMenuIdChallenge() {
+    return required('CAFE_MENU_ID_CHALLENGE');
+  },
+  /** 챌린지에 참여하지 않는 회원용 게시판 menuid. 고정값(포스팅 공유방 = 17). */
+  get cafeMenuIdSharing() {
+    return required('CAFE_MENU_ID_SHARING');
   },
   get supabaseUrl() {
     return required('NEXT_PUBLIC_SUPABASE_URL');
