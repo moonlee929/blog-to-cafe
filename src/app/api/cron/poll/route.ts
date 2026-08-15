@@ -13,8 +13,19 @@ export const maxDuration = 60;
  * Vercel은 Authorization: Bearer <CRON_SECRET> 헤더를 붙여 호출합니다.
  */
 export async function GET(req: NextRequest) {
+  // 환경 변수 미설정과 인증 실패를 구분해서 돌려줍니다.
+  // 구분하지 않으면 배포 직후 설정 누락이 인증 오류처럼 보여 원인 파악이 어렵습니다.
+  let expected: string;
+  try {
+    expected = `Bearer ${env.cronSecret}`;
+  } catch {
+    return NextResponse.json(
+      { error: 'CRON_SECRET 환경 변수가 설정되지 않았습니다. Vercel 프로젝트 설정에서 추가하세요.' },
+      { status: 503 },
+    );
+  }
+
   const auth = req.headers.get('authorization') ?? '';
-  const expected = `Bearer ${env.cronSecret}`;
   if (!safeEqual(auth, expected)) {
     return NextResponse.json({ error: '인증 실패' }, { status: 401 });
   }
