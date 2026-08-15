@@ -97,11 +97,30 @@ vercel
 Vercel 프로젝트 설정 → Environment Variables 에 `.env.example` 의 모든 항목을 넣습니다.
 `NAVER_REDIRECT_URI` 는 배포 도메인 기준으로 바꾸고, 네이버 앱에도 같은 주소를 등록해야 합니다.
 
-크론은 `vercel.json` 에 정의되어 있습니다 (10분 간격). Vercel이 `/api/cron/poll` 을
+크론은 `vercel.json` 에 정의되어 있습니다. Vercel이 `/api/cron/poll` 을
 `Authorization: Bearer $CRON_SECRET` 헤더와 함께 호출합니다.
 
-Hobby 플랜은 함수 실행 시간이 60초, 크론이 하루 1회로 제한됩니다.
-실시간에 가깝게 돌리려면 Pro 플랜이 필요합니다.
+### ⚠️ 폴링 주기는 Vercel 플랜에 묶여 있습니다
+
+| 플랜 | 크론 최소 주기 | 시각 정밀도 | 함수 실행 시간 |
+|---|---|---|---|
+| **Hobby** | **하루 1회** | ±59분 | 60초 |
+| **Pro** | 1분 | 분 단위 | 300초 |
+
+Hobby에서 `*/10 * * * *` 같은 표현을 쓰면 **배포가 실패합니다**
+(`Hobby accounts are limited to daily cron jobs`).
+
+그래서 현재 `vercel.json` 은 **하루 1회(`0 21 * * *`, 한국시간 오전 6시)** 로 맞춰 두었습니다.
+이 상태로는 "새 글이 올라오면 즉시 발행"이 아니라 **하루 한 번 몰아서 발행**입니다.
+
+브리핑대로 5~10분 간격 실시간 감지를 하려면 **Pro 플랜으로 올린 뒤** 아래 한 줄만 바꾸면 됩니다.
+
+```json
+"schedule": "*/10 * * * *"
+```
+
+Pro로 올리면 `src/app/api/cron/poll/route.ts` 의 `maxDuration` 도 300까지 올릴 수 있어,
+회원 수가 늘어도 한 번의 실행에서 더 많은 건을 처리할 수 있습니다.
 
 ---
 
