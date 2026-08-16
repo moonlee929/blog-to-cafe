@@ -8,3 +8,7 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# 로컬 검증용 임시 파일
+_verify.mjs
+dev.log
